@@ -28,7 +28,7 @@ docker compose exec -T backend python -m scripts.seed_demo
 | 前端 | Vue 3.5.13、TypeScript5.7、Vite6、Vue Router4 |
 | Python | Python3.12、FastAPI0.115.6、SQLAlchemy2、NumPy2.2.1 |
 | 存储 | MySQL8.4 LTS（采用本机已有MySQL8版本）、Redis7.4 |
-| 队列 | Redis列表+独立Python worker，运行状态与结果写回MySQL |
+| 队列 | Redis列表+去重集合，独立Python worker，运行状态与结果写回MySQL |
 | 网关 | Nginx1.28，前端静态资源与SPA回落 |
 
 - `backend/src/{models,schemas,services,controllers,routes}`：六实体职责分层。
@@ -88,7 +88,7 @@ docker compose exec -T backend python -m scripts.seed_demo
 ## 已知差异
 
 - MySQL采用8.4 LTS，基线可接受的MySQL8家族；不是8.0镜像。
-- 队列是Redis列表，worker在取走任务后崩溃不会自动重投；可新建运行重试，未实现生产级任务租约和取消。
+- 排队中/计算中的运行在worker重启后自动续跑，沿用原运行编号；围栏令牌保证多处同时接手时只有当前有效处理能写入结果，旧处理晚到不覆盖。单次失败自动重试，累计3次失败后停止，结果页显示尝试次数与最后原因。仍未实现任务取消。
 - 目前只对新数据库自动创建表，没有存量数据库版本升级/回滚工具；生产扩容需要正式迁移流程。
 - 列表最多返回最新200条实体；尚无服务端全文搜索和分页。事件导入为有限CSV，不接外部实时数据源。
 - 双字体通过Google Fonts加载；离线时浏览器回退字体。所有观测均为模拟数据；归因只支持所述描述性分析。

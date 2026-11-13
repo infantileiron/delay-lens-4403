@@ -1,4 +1,4 @@
-from sqlalchemy import String,Text,JSON,ForeignKey
+from sqlalchemy import String,Text,JSON,Integer,ForeignKey
 from sqlalchemy.orm import Mapped,mapped_column
 from .common import RecordMixin
 from ..config.database import Base
@@ -8,3 +8,5 @@ class DelayRun(RecordMixin,Base):
  status:Mapped[str]=mapped_column(String(20),default="queued")
  result:Mapped[dict]=mapped_column(JSON,default=dict)
  error:Mapped[str]=mapped_column(Text,default="")
+ attempts:Mapped[int]=mapped_column(Integer,default=0)
+ fence:Mapped[int]=mapped_column(Integer,default=0)
